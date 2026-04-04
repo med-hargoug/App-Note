@@ -1,1 +1,19 @@
-<p>folder-side-bar-component works!</p>
+<nav class="sidebar-nav">
+  <div class="nav-section">
+    <button (click)="selectFolder('all')">📑 All Notes</button>
+    <button (click)="selectFolder('trash')">🗑️ Trash</button>
+  </div>
+
+  <div class="nav-section">
+    <h3>Folders</h3>
+    <div *ngFor="let folder of folders" (click)="selectFolder(folder.id)" class="folder-item">
+      📁 {{ folder.name }}
+    </div>
+  </div>
+  <div 
+  (click)="selectFolder('all')" 
+  [class.active]="currentFilter === 'all'"
+  class="nav-item">
+  📑 All Notes
+  </div>
+</nav>

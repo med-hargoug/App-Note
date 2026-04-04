@@ -1,1 +1,34 @@
 /* You can add global styles to this file, and also import other style files */
+:root {
+  --bg-sidebar: #f7f7f5;
+  --bg-hover: #efefed;
+  --text-main: #37352f;
+}
+
+.sidebar-nav {
+  background: var(--bg-sidebar);
+  padding: 20px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.folder-item, .nav-section button {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--text-main);
+}
+
+.folder-item:hover {
+  background: var(--bg-hover);
+}
+body.dark-mode {
+  --bg-sidebar: #202020;
+  --bg-main: #2f2f2f;
+  --text-main: #ffffff;
+}

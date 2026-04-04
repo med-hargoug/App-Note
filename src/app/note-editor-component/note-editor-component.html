@@ -1,1 +1,56 @@
-<p>note-editor-component works!</p>
+<div class="editor-container" *ngIf="note">
+  <input class="title-input" [(ngModel)]="note.title" (input)="save()" placeholder="Note Title...">
+  
+  <div class="toolbar">
+    <button (click)="execCommand('bold')"><b>B</b></button>
+    <button (click)="execCommand('italic')"><i>I</i></button>
+    <button (click)="execCommand('insertUnorderedList')">List</button>
+  </div>
+
+  <div 
+    id="editor"
+    contenteditable="true" 
+    class="rich-editor" 
+    (input)="onContentChange($event)">
+    {{ note.content }}
+  </div>
+
+
+
+
+  <div class="editor-shell" *ngIf="note" [style.border-top]="'8px solid ' + note.color">
+  
+  <div class="editor-header">
+    <input class="title-field" [(ngModel)]="note.title" (input)="save()" placeholder="Untitled">
+    
+    <div class="action-bar">
+      <button (click)="togglePin()" [class.pinned]="note.isPinned">
+        {{ note.isPinned ? '📌 Pinned' : '📍 Pin' }}
+      </button>
+
+      <div class="color-dots">
+        <span *ngFor="let c of ['#ffffff', '#fff4ba', '#ffd1dc', '#d1eaff']" 
+              [style.background]="c"
+              (click)="changeColor(c)"
+              [class.active]="note.color === c">
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button (click)="execCommand('bold')"><b>B</b></button>
+    <button (click)="execCommand('italic')"><i>I</i></button>
+    <button (click)="execCommand('insertUnorderedList')">• List</button>
+    <button (click)="execCommand('justifyLeft')">⬅</button>
+  </div>
+
+  <div 
+    id="main-editor"
+    contenteditable="true" 
+    class="editable-content"
+    (input)="onContentChange($event)"
+    [innerHTML]="note.content">
+  </div>
+</div>
+</div>

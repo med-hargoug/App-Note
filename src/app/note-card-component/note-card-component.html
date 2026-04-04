@@ -1,4 +1,32 @@
-<!DOCTYPE html>
-<h3>hello !</h3>
-<p>note-card-component works!</p>
-
+<div class="card h-100 shadow-sm" [style.border-left]="'5px solid ' + note.color">
+  <div class="card-body">
+    <div class="d-flex justify-content-between">
+      <h5 class="card-title text-truncate">{{ note.title }}</h5>
+      <i *ngIf="note.isPinned" class="bi bi-pin-angle-fill text-primary"></i>
+    </div>
+    
+    <p class="card-text text-muted small" *ngIf="displayMode === 'grid'">
+      {{ note.content | slice:0:100 }}...
+    </p>
+    
+    <div class="d-flex justify-content-end mt-2">
+      <small class="text-muted">{{ note.updatedAt | date:'shortDate' }}</small>
+    </div>
+  </div>
+  <div class="card" [style.border-left]="'4px solid ' + note.color">
+  <div class="card-body">
+    <h3 class="card-title">{{ note.title | truncate:25 }}</h3>
+    
+    <p class="date-tag">Modified {{ note.updatedAt | timeAgo }}</p>
+    
+    <p class="preview" *ngIf="displayMode === 'grid'">
+      {{ note.content | truncate:100 }}
+    </p>
+    
+    <div class="card-footer">
+      <span *ngIf="note.isPinned">📌 Pinned</span>
+      <button (click)="onOpen()">Open Note</button>
+    </div>
+  </div>
+</div>
+</div>

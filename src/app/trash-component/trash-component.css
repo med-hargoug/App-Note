@@ -1,0 +1,31 @@
+.trash-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  background: #fff;
+}
+
+.trash-item:hover {
+  background: #fafafa;
+}
+
+.btn-restore {
+  background: none;
+  border: 1px solid #2ecc71;
+  color: #2ecc71;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.btn-delete {
+  background: none;
+  border: 1px solid #e74c3c;
+  color: #e74c3c;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}

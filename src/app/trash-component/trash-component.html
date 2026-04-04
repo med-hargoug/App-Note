@@ -1,1 +1,22 @@
-<p>trash-component works!</p>
+<div class="trash-header">
+  <h2>🗑️ Trash</h2>
+  <p class="text-muted">Notes here are deleted after 30 days.</p>
+</div>
+
+<div class="trash-list">
+  <div *ngIf="trashNotes.length === 0" class="empty-state">
+    Your trash is empty.
+  </div>
+
+  <div class="trash-item" *ngFor="let note of trashNotes">
+    <div class="info">
+      <strong>{{ note.title }}</strong>
+      <span>Deleted {{ note.deletedAt! | timeAgo }}</span>
+    </div>
+    
+    <div class="actions">
+      <button (click)="onRestore(note.id)" class="btn-restore">Restore</button>
+      <button (click)="onDelete(note.id)" class="btn-delete">Delete Forever</button>
+    </div>
+  </div>
+</div>

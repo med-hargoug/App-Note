@@ -1,0 +1,5 @@
+.nav-item.active {
+  background-color: #efefed; /* Light grey highlight */
+  border-left: 4px solid #37352f; /* Notion-style black accent */
+  font-weight: 600;
+}

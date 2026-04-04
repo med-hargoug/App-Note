@@ -6,4 +6,6 @@ import { Component } from '@angular/core';
   templateUrl: './folder-side-bar-component.html',
   styleUrl: './folder-side-bar-component.css',
 })
-export class FolderSideBarComponent {}
+export class FolderSideBarComponent {
+
+}

@@ -1,18 +1,27 @@
-
-
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NoteService } from '../note-service';
 import { Note } from '../interface/note-interface';
-
+import { FormsModule } from '@angular/forms';
+import { TimeAgoPipe } from '../time-ago-pipe-pipe';
 
 @Component({
   selector: 'app-note-editor',
+  standalone: true,
+  imports: [CommonModule, FormsModule, TimeAgoPipe],
   templateUrl: './note-editor-component.html',
   styleUrls: ['./note-editor-component.css']
 })
 export class NoteEditorComponent implements OnInit {
   note?: Note;
+
+  colors: string[] = [
+    '#ffffff',
+    '#fdecec', '#fef3cd', '#e8f5e9',
+    '#e3f2fd', '#f3e5f5', '#fce4ec',
+    '#f0f4f8', '#fff8e1'
+  ];
 
   constructor(
     private route: ActivatedRoute,
@@ -21,53 +30,55 @@ export class NoteEditorComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Get the ID from the URL
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.note = this.noteService.getNoteById(id);
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.note = this.noteService.getNoteById(id);
+        if (!this.note) this.router.navigate(['/notes']);
+      }
+    });
+  }
+
+  execCommand(command: string, value: string = '') {
+    document.execCommand(command, false, value);
+    this.save();
+  }
+
+  onContentChange(event: Event) {
+    const el = event.target as HTMLElement;
+    if (this.note) {
+      this.note.content = el.innerHTML;
+      this.save();
     }
   }
 
+  updateTitle(newTitle: string) {
+    if (this.note) { this.note.title = newTitle; this.save(); }
+  }
 
+  togglePin() {
+    if (this.note) { this.note.isPinned = !this.note.isPinned; this.save(); }
+  }
 
-  // Inside NoteEditorComponent
+  changeColor(color: string) {
+    if (this.note) { this.note.color = color; this.save(); }
+  }
 
-// Helper to apply formatting (Bold, Italic, etc.)
-execCommand(command: string) {
-  document.execCommand(command, false, '');
-}
+  moveToTrash() {
+    if (this.note) {
+      this.noteService.moveToTrash(this.note.id);
+      this.router.navigate(['/notes']);
+    }
+  }
 
-// Requirement #3: Save every time the content changes
-onContentChange(event: any) {
-  if (this.note) {
-    this.note.content = event.target.innerHTML;
-    this.save();
+  goBack() {
+    this.router.navigate(['/notes']);
+  }
+
+  save() {
+    if (this.note) {
+      this.note.updatedAt = Date.now();
+      this.noteService.updateNote(this.note);
+    }
   }
 }
-
-// Requirement #1 & #6: Update status and save
-togglePin() {
-  if (this.note) {
-    this.note.isPinned = !this.note.isPinned;
-    this.save();
-  }
-}
-
-changeColor(color: string) {
-  if (this.note) {
-    this.note.color = color;
-    this.save();
-  }
-}
-
-save() {
-  if (this.note) {
-    this.note.updatedAt = Date.now();
-    this.noteService.updateNote(this.note);
-  }
-}
-}
-
-
-
-

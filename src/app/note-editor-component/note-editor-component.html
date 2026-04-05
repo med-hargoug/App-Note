@@ -1,56 +1,94 @@
-<div class="editor-container" *ngIf="note">
-  <input class="title-input" [(ngModel)]="note.title" (input)="save()" placeholder="Note Title...">
-  
-  <div class="toolbar">
-    <button (click)="execCommand('bold')"><b>B</b></button>
-    <button (click)="execCommand('italic')"><i>I</i></button>
-    <button (click)="execCommand('insertUnorderedList')">List</button>
-  </div>
+<div class="editor-page" *ngIf="note" [style.background]="note.color && note.color !== '#ffffff' ? note.color + '18' : ''">
 
-  <div 
-    id="editor"
-    contenteditable="true" 
-    class="rich-editor" 
-    (input)="onContentChange($event)">
-    {{ note.content }}
-  </div>
+  <!-- Editor toolbar -->
+  <div class="editor-topbar">
+    <button class="back-btn" (click)="goBack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </button>
 
+    <div class="toolbar-actions">
+      <!-- Bold / Italic / List -->
+      <button class="toolbar-btn" (click)="execCommand('bold')" title="Bold"><b>B</b></button>
+      <button class="toolbar-btn" (click)="execCommand('italic')" title="Italic"><i>I</i></button>
+      <button class="toolbar-btn" (click)="execCommand('underline')" title="Underline"><u>U</u></button>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn" (click)="execCommand('insertUnorderedList')" title="Bullet list">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>
+      </button>
+      <button class="toolbar-btn" (click)="execCommand('insertOrderedList')" title="Numbered list">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+      </button>
+      <div class="toolbar-sep"></div>
 
-
-
-  <div class="editor-shell" *ngIf="note" [style.border-top]="'8px solid ' + note.color">
-  
-  <div class="editor-header">
-    <input class="title-field" [(ngModel)]="note.title" (input)="save()" placeholder="Untitled">
-    
-    <div class="action-bar">
-      <button (click)="togglePin()" [class.pinned]="note.isPinned">
-        {{ note.isPinned ? '📌 Pinned' : '📍 Pin' }}
+      <!-- Pin toggle -->
+      <button class="toolbar-btn" [class.active]="note.isPinned" (click)="togglePin()" title="Pin note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       </button>
 
-      <div class="color-dots">
-        <span *ngFor="let c of ['#ffffff', '#fff4ba', '#ffd1dc', '#d1eaff']" 
-              [style.background]="c"
-              (click)="changeColor(c)"
-              [class.active]="note.color === c">
-        </span>
+      <!-- Color picker -->
+      <div class="color-picker-wrap">
+        <button class="toolbar-btn color-trigger" title="Note color">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </button>
+        <div class="color-dropdown">
+          <span
+            *ngFor="let c of colors"
+            class="color-swatch"
+            [style.background]="c"
+            [class.selected]="note.color === c"
+            (click)="changeColor(c)"
+            [title]="c">
+          </span>
+        </div>
       </div>
+
+      <div class="toolbar-sep"></div>
+
+      <!-- Delete -->
+      <button class="toolbar-btn danger" (click)="moveToTrash()" title="Move to trash">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 3h6"/></svg>
+      </button>
     </div>
   </div>
 
-  <div class="toolbar">
-    <button (click)="execCommand('bold')"><b>B</b></button>
-    <button (click)="execCommand('italic')"><i>I</i></button>
-    <button (click)="execCommand('insertUnorderedList')">• List</button>
-    <button (click)="execCommand('justifyLeft')">⬅</button>
+  <!-- Editor content area -->
+  <div class="editor-shell">
+
+    <!-- Emoji / cover placeholder -->
+    <div class="page-emoji">📝</div>
+
+    <!-- Title -->
+    <input
+      class="editor-title"
+      [(ngModel)]="note.title"
+      (input)="save()"
+      placeholder="Untitled"
+      spellcheck="true">
+
+    <!-- Rich text editor -->
+    <div
+      id="notion-editor"
+      class="editor-content"
+      contenteditable="true"
+      (input)="onContentChange($event)"
+      [innerHTML]="note.content"
+      data-placeholder="Start writing, or press '/' for commands…">
+    </div>
+
   </div>
 
-  <div 
-    id="main-editor"
-    contenteditable="true" 
-    class="editable-content"
-    (input)="onContentChange($event)"
-    [innerHTML]="note.content">
+  <!-- Bottom meta bar -->
+  <div class="editor-meta">
+    <span class="meta-item">Last edited {{ note.updatedAt | timeAgo }}</span>
+    <span class="meta-sep">·</span>
+    <span class="meta-item" *ngIf="note.isPinned">📌 Pinned</span>
+    <span class="meta-item" *ngIf="!note.isPinned">Not pinned</span>
   </div>
+
 </div>
+
+<!-- Loading / not found state -->
+<div class="editor-loading" *ngIf="!note">
+  <p>Loading note…</p>
 </div>

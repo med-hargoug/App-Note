@@ -1,0 +1,137 @@
+.note-card {
+  border: 1px solid var(--notion-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: box-shadow 150ms ease, background 150ms ease;
+  overflow: hidden;
+  background: var(--notion-bg);
+}
+
+/* ---- Grid card ---- */
+.grid-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 130px;
+}
+
+.grid-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card-color-bar {
+  height: 4px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.card-body {
+  flex: 1;
+  padding: 12px 14px 8px;
+}
+
+.card-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--notion-text);
+  flex: 1;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.pin-badge {
+  font-size: 11px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.card-preview {
+  font-size: 12px;
+  color: var(--notion-text-secondary);
+  line-height: 1.5;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-footer {
+  padding: 6px 14px 10px;
+  border-top: 1px solid var(--notion-border);
+}
+
+.card-time {
+  font-size: 11px;
+  color: var(--notion-text-tertiary);
+}
+
+/* ---- List card ---- */
+.list-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  border-bottom: 1px solid var(--notion-border);
+}
+
+.list-card:last-child { border-bottom: none; }
+
+.list-card:hover {
+  background: var(--notion-hover);
+}
+
+.list-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.list-emoji {
+  font-size: 14px;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.list-body {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
+
+.list-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--notion-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+
+.list-preview {
+  font-size: 12px;
+  color: var(--notion-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.list-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}

@@ -1,18 +1,77 @@
-.app-container {
+/* ============================================
+   NOTION-STYLE DESIGN SYSTEM
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --notion-bg: #ffffff;
+  --notion-sidebar: #f7f6f3;
+  --notion-sidebar-hover: #ebebea;
+  --notion-border: #e9e9e7;
+  --notion-text: #37352f;
+  --notion-text-secondary: #9b9a97;
+  --notion-text-tertiary: #b7b5b0;
+  --notion-primary: #37352f;
+  --notion-accent: #2f6fed;
+  --notion-hover: rgba(55, 53, 47, 0.06);
+  --notion-selected: rgba(35, 131, 226, 0.14);
+  --notion-red: #eb5757;
+  --notion-green: #0f7b6c;
+  --notion-blue: #2383e2;
+  --sidebar-width: 240px;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --transition: 120ms ease;
+}
+
+body.dark-mode {
+  --notion-bg: #191919;
+  --notion-sidebar: #1f1f1f;
+  --notion-sidebar-hover: #2b2b2b;
+  --notion-border: #2f2f2f;
+  --notion-text: #e6e6e4;
+  --notion-text-secondary: #7b7b78;
+  --notion-text-tertiary: #5a5a57;
+  --notion-hover: rgba(255, 255, 255, 0.055);
+  --notion-selected: rgba(35, 131, 226, 0.2);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--notion-text);
+  background: var(--notion-bg);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--notion-border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--notion-text-tertiary); }
+
+.app-root {
   display: flex;
   height: 100vh;
-  width: 100vw;
   overflow: hidden;
+  background: var(--notion-bg);
 }
 
-.sidebar {
-  width: 260px;
-  background-color: #f7f7f5; /* Light grey, Notion-style */
-  border-right: 1px solid #e0e0e0;
+mark.search-highlight {
+  background: rgba(255, 220, 0, 0.45);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
 }
 
-.content {
-  flex-grow: 1;
+.main-content {
+  flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  background: var(--notion-bg);
+  min-width: 0;
 }

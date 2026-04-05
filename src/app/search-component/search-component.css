@@ -1,0 +1,21 @@
+.search-wrapper {
+  padding: 20px 0;
+}
+
+.input-group {
+  border: 1px solid var(--notion-border);
+  background: var(--notion-sidebar);
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+.input-group:focus-within {
+  border-color: var(--notion-primary);
+  background: white;
+}
+
+.form-control {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}

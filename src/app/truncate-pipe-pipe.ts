@@ -1,20 +1,13 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'truncatePipe',
+  name: 'truncate',
+  standalone: true
 })
-export class TruncatePipePipe implements PipeTransform {
-  transform(value: unknown, ...args: unknown[]): unknown {
-    return null;
-  }
-}
-
-@Pipe({ name: 'truncate' })
 export class TruncatePipe implements PipeTransform {
-  // limit: how many characters to show
-  // ellipsis: what to show at the end (default is '...')
-  transform(value: string, limit: number = 40, ellipsis: string = '...'): string {
+  transform(value: string, limit: number = 100): string {
     if (!value) return '';
-    return value.length > limit ? value.substring(0, limit) + ellipsis : value;
+    const plain = value.replace(/<[^>]*>/g, '');
+    return plain.length > limit ? plain.slice(0, limit) + '…' : plain;
   }
 }

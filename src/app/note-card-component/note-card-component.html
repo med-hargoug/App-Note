@@ -1,32 +1,40 @@
-<div class="card h-100 shadow-sm" [style.border-left]="'5px solid ' + note.color">
+<!-- GRID VIEW -->
+<div *ngIf="displayMode === 'grid'"
+  class="note-card grid-card"
+  (click)="onOpen()"
+  [style.background]="cardColor !== 'transparent' ? cardColor + '22' : ''"
+  [style.border-color]="cardColor !== 'transparent' ? cardColor + '55' : ''">
+
+  <div class="card-color-bar" *ngIf="cardColor !== 'transparent'" [style.background]="cardColor"></div>
+
   <div class="card-body">
-    <div class="d-flex justify-content-between">
-      <h5 class="card-title text-truncate">{{ note.title }}</h5>
-      <i *ngIf="note.isPinned" class="bi bi-pin-angle-fill text-primary"></i>
+    <div class="card-title-row">
+      <span class="card-title" [innerHTML]="(note.title || 'Untitled') | highlight:searchTerm"></span>
+      <span class="pin-badge" *ngIf="note.isPinned" title="Pinned">📌</span>
     </div>
-    
-    <p class="card-text text-muted small" *ngIf="displayMode === 'grid'">
-      {{ note.content | slice:0:100 }}...
-    </p>
-    
-    <div class="d-flex justify-content-end mt-2">
-      <small class="text-muted">{{ note.updatedAt | date:'shortDate' }}</small>
-    </div>
+    <p class="card-preview" [innerHTML]="(note.content | truncate:120) | highlight:searchTerm"></p>
   </div>
-  <div class="card" [style.border-left]="'4px solid ' + note.color">
-  <div class="card-body">
-    <h3 class="card-title">{{ note.title | truncate:25 }}</h3>
-    
-    <p class="date-tag">Modified {{ note.updatedAt | timeAgo }}</p>
-    
-    <p class="preview" *ngIf="displayMode === 'grid'">
-      {{ note.content | truncate:100 }}
-    </p>
-    
-    <div class="card-footer">
-      <span *ngIf="note.isPinned">📌 Pinned</span>
-      <button (click)="onOpen()">Open Note</button>
-    </div>
+
+  <div class="card-footer">
+    <span class="card-time">{{ note.updatedAt | timeAgo }}</span>
   </div>
 </div>
+
+<!-- LIST VIEW -->
+<div *ngIf="displayMode === 'list'"
+  class="note-card list-card"
+  (click)="onOpen()">
+
+  <div class="list-color-dot" *ngIf="cardColor !== 'transparent'" [style.background]="cardColor"></div>
+  <div class="list-emoji" *ngIf="cardColor === 'transparent'">📄</div>
+
+  <div class="list-body">
+    <span class="list-title" [innerHTML]="(note.title || 'Untitled') | highlight:searchTerm"></span>
+    <span class="list-preview" [innerHTML]="(note.content | truncate:60) | highlight:searchTerm"></span>
+  </div>
+
+  <div class="list-meta">
+    <span class="pin-badge" *ngIf="note.isPinned">📌</span>
+    <span class="card-time">{{ note.updatedAt | timeAgo }}</span>
+  </div>
 </div>

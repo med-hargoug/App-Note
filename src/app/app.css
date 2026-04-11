@@ -74,4 +74,45 @@ mark.search-highlight {
   overflow-y: auto;
   background: var(--notion-bg);
   min-width: 0;
+  position: relative;
 }
+
+/* ── SIDEBAR TOGGLE ── */
+.sidebar-wrapper {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  transition: width 220ms cubic-bezier(.4,0,.2,1), min-width 220ms cubic-bezier(.4,0,.2,1), opacity 200ms ease;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-wrapper.collapsed {
+  width: 0;
+  min-width: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar-toggle-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 50;
+  background: var(--notion-bg);
+  border: 1px solid var(--notion-border);
+  border-radius: var(--radius-md);
+  padding: 5px 7px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--notion-text-secondary);
+  transition: background var(--transition), color var(--transition);
+}
+
+.sidebar-toggle-btn svg { width: 16px; height: 16px; }
+.sidebar-toggle-btn:hover {
+  background: var(--notion-hover);
+  color: var(--notion-text);
+}
+

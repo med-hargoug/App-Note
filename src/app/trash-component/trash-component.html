@@ -1,10 +1,10 @@
 <div class="trash-page">
 
   <div class="page-topbar">
-    <button class="back-btn" routerLink="/notes">
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:32px"></div><button class="back-btn" routerLink="/notes">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
       Back
-    </button>
+    </button></div>
     <button
       class="empty-trash-btn"
       *ngIf="(trashNotes$ | async)?.length"

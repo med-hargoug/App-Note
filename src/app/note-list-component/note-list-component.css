@@ -7,6 +7,7 @@
 .page-topbar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   padding: 10px 20px;
   border-bottom: 1px solid var(--notion-border);
@@ -25,7 +26,8 @@
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   padding: 6px 10px;
-  max-width: 360px;
+  max-width: 320px;
+  min-width: 160px;
   transition: border-color var(--transition), background var(--transition);
 }
 
@@ -184,3 +186,16 @@
 }
 
 .empty-cta:hover { background: var(--notion-hover); }
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.page-subtitle {
+  font-size: 12px;
+  color: var(--notion-text-tertiary);
+  margin-top: 4px;
+}

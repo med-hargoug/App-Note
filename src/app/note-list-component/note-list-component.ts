@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NoteService } from '../note-service';
 import { Note } from '../interface/note-interface';
@@ -20,6 +20,7 @@ export class NoteListComponent implements OnInit {
   isGridView = true;
   currentSearchTerm = '';
   pageTitle = 'All Notes';
+  currentFolderId: string = 'all';
 
   constructor(private noteService: NoteService, private router: Router) {}
 
@@ -30,20 +31,20 @@ export class NoteListComponent implements OnInit {
       this.noteService.searchTerm$
     ]).subscribe(([allNotes, folderId, term]) => {
       this.currentSearchTerm = term;
+      this.currentFolderId = folderId;
 
-      if (folderId === 'all') this.pageTitle = 'All Notes';
-      else {
-        // pageTitle will be set by folder name lookup if needed
-        this.pageTitle = 'Notes';
-      }
+      // HOME PAGE ("all"): show ALL active notes regardless of folder
+      // FOLDER PAGE: show only notes in that folder — BUT they also appear on home
+      // This means notes with a folderId still show on home (no filtering by folder on home)
+      let filtered = allNotes.filter(n => !n.deletedAt);
 
-      let filtered = allNotes;
-      if (folderId === 'trash') {
-        filtered = filtered.filter(n => !!n.deletedAt);
-      } else if (folderId === 'all') {
-        filtered = filtered.filter(n => !n.deletedAt);
+      if (folderId !== 'all') {
+        // Folder view: show only notes belonging to this folder
+        filtered = filtered.filter(n => n.folderId === folderId);
+        this.pageTitle = 'Folder Notes';
       } else {
-        filtered = filtered.filter(n => n.folderId === folderId && !n.deletedAt);
+        // Home: show ALL active notes (including those in folders)
+        this.pageTitle = 'All Notes';
       }
 
       if (term.trim()) {
@@ -64,7 +65,8 @@ export class NoteListComponent implements OnInit {
   toggleView() { this.isGridView = !this.isGridView; }
 
   createNewNote() {
-    const newId = this.noteService.createNote();
+    const folderId = this.currentFolderId !== 'all' ? this.currentFolderId : null;
+    const newId = this.noteService.createNote(folderId);
     this.router.navigate(['/notes', newId]);
   }
 

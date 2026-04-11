@@ -2,17 +2,21 @@
 
   <!-- Top bar -->
   <div class="page-topbar">
-    <div class="search-wrap">
-      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input
-        class="search-input"
-        #searchInput
-        type="text"
-        placeholder="Search notes…"
-        (input)="onSearch($event)">
-      <button class="search-clear" *ngIf="searchInput.value" (click)="clearSearch(searchInput)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
+    <div class="topbar-left">
+      <!-- spacer for sidebar toggle button (absolute positioned) -->
+      <div style="width:32px"></div>
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input
+          class="search-input"
+          #searchInput
+          type="text"
+          placeholder="Search notes…"
+          (input)="onSearch($event)">
+        <button class="search-clear" *ngIf="searchInput.value" (click)="clearSearch(searchInput)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
     </div>
 
     <div class="topbar-actions">
@@ -27,15 +31,18 @@
     </div>
   </div>
 
-  <!-- Page title -->
+  <!-- Page header -->
   <div class="page-header">
     <h1 class="page-title">{{ pageTitle }}</h1>
+    <p class="page-subtitle" *ngIf="currentFolderId !== 'all'">
+      Notes in this folder also appear on the home page.
+    </p>
   </div>
 
-  <!-- Notes grid/list -->
+  <!-- Notes -->
   <div class="notes-container" *ngIf="notes.length > 0; else emptyState">
 
-    <!-- Pinned section -->
+    <!-- Pinned -->
     <div *ngIf="pinnedNotes.length > 0">
       <div class="notes-section-label">📌 Pinned</div>
       <div [class]="isGridView ? 'notes-grid' : 'notes-list'">
@@ -48,7 +55,7 @@
       </div>
     </div>
 
-    <!-- Other notes -->
+    <!-- Other -->
     <div *ngIf="unpinnedNotes.length > 0">
       <div class="notes-section-label" *ngIf="pinnedNotes.length > 0">Other</div>
       <div [class]="isGridView ? 'notes-grid' : 'notes-list'">
@@ -63,12 +70,11 @@
 
   </div>
 
-  <!-- Empty state -->
   <ng-template #emptyState>
     <div class="empty-state">
       <div class="empty-icon">📄</div>
       <p class="empty-title">No pages here</p>
-      <p class="empty-sub">Create a new note to get started.</p>
+      <p class="empty-sub">Click "New" to create your first note.</p>
       <button class="empty-cta" (click)="createNewNote()">+ New page</button>
     </div>
   </ng-template>

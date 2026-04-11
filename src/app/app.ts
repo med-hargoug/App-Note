@@ -3,16 +3,18 @@ import { RouterOutlet } from '@angular/router';
 import { FolderSidebarComponent } from './folder-side-bar-component/folder-side-bar-component';
 import { NoteService } from './note-service';
 import { TruncatePipe } from './truncate-pipe-pipe';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, FolderSidebarComponent, TruncatePipe],
+  imports: [RouterOutlet, FolderSidebarComponent, TruncatePipe, CommonModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
   protected readonly title = signal('AppNote');
+  sidebarOpen = true;
 
   constructor(private noteService: NoteService) {}
 
@@ -20,7 +22,7 @@ export class App {
     this.noteService.autoPurgeTrash();
   }
 
-  toggleDarkMode() {
-    document.body.classList.toggle('dark-mode');
+  toggleSidebar() {
+    this.sidebarOpen = !this.sidebarOpen;
   }
 }

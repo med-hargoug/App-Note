@@ -8,6 +8,8 @@ import { NoteService } from '../note-service';
 import { Note } from '../interface/note-interface';
 import { FormsModule } from '@angular/forms';
 import { TimeAgoPipe } from '../time-ago-pipe-pipe';
+import { jsPDF } from 'jspdf';
+import * as html2pdf from 'html2pdf.js';
 
 @Component({
   selector: 'app-note-editor',
@@ -50,6 +52,7 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, AfterViewChec
     private router: Router,
     private ngZone: NgZone
   ) {}
+
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -168,6 +171,7 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, AfterViewChec
       this.noteService.updateNote(this.note);
     }
   }
+  
 
   // ── PICKER TOGGLES ──
   // Each toggle: stop propagation so the document click listener doesn't immediately close it
@@ -200,37 +204,24 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, AfterViewChec
 
   stopProp(e: MouseEvent): void { e.stopPropagation(); }
 
-  // ── PDF DOWNLOAD ──
-  downloadAsPdf(): void {
-    if (!this.note) return;
-    const title = this.note.title || 'Untitled';
-    const content = this.note.content || '';
-    const printHtml = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>${title}</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; font-size: 15px; color: #37352f;
-           line-height: 1.75; background: #fff; padding: 60px 80px; max-width: 800px; margin: 0 auto; }
-    h1.note-title { font-size: 36px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 8px; }
-    .note-meta { font-size: 12px; color: #9b9a97; margin-bottom: 32px; padding-bottom: 16px;
-                 border-bottom: 1px solid #e9e9e7; }
-    .note-body { word-break: break-word; }
-    ul, ol { padding-left: 24px; margin: 8px 0; }
-  </style>
-</head>
-<body>
-  <h1 class="note-title">${title}</h1>
-  <div class="note-meta">Last edited: ${new Date(this.note.updatedAt).toLocaleString()}</div>
-  <div class="note-body">${content}</div>
-  <script>window.onload=()=>{window.print();window.onafterprint=()=>window.close();}<\/script>
-</body></html>`;
-    const blob = new Blob([printHtml], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const win = window.open(url, '_blank');
-    if (win) win.onload = () => URL.revokeObjectURL(url);
-  }
+downloadAsPDF() {
+  const doc = new jsPDF();
+  
+  const title = this.note?.title || 'Untitled Note';
+  const rawContent = this.note?.content || '';
+
+  // NEW STEP: This line removes all <tags> like <div>, <p>, <b> etc.
+  const cleanText = rawContent.replace(/<[^>]*>/g, ''); 
+
+  doc.setFontSize(22);
+  doc.text(title, 20, 20);
+  
+  doc.setFontSize(12);
+  // We use the 'cleanText' here instead of 'rawContent'
+  const splitContent = doc.splitTextToSize(cleanText, 170); 
+  doc.text(splitContent, 20, 40);
+
+  doc.save(`${title.replace(/\s+/g, '_')}.pdf`);
+}
+
 }

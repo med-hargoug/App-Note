@@ -1,10 +1,11 @@
 .note-card {
   border: 1px solid var(--notion-border);
-  border-radius: var(--radius-lg);
+  border-radius: 12px;
   cursor: pointer;
-  transition: box-shadow 150ms ease, background 150ms ease;
+  transition: box-shadow 160ms ease, background 160ms ease, transform 160ms ease;
   overflow: hidden;
   background: var(--notion-bg);
+  will-change: transform;
 }
 
 /* ---- Grid card ---- */
@@ -15,7 +16,8 @@
 }
 
 .grid-card:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.09), 0 1px 4px rgba(0,0,0,0.05);
+  transform: translateY(-1px);
 }
 
 .card-color-bar {
@@ -78,7 +80,7 @@
   align-items: center;
   gap: 10px;
   padding: 8px 16px;
-  border-radius: var(--radius-sm);
+  border-radius: 6px;
   border: none;
   border-bottom: 1px solid var(--notion-border);
 }

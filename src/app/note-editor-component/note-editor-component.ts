@@ -1,4 +1,7 @@
-import { Component, OnInit, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component, OnInit, AfterViewInit, AfterViewChecked,
+  ElementRef, ViewChild, NgZone
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NoteService } from '../note-service';
@@ -13,103 +16,119 @@ import { TimeAgoPipe } from '../time-ago-pipe-pipe';
   templateUrl: './note-editor-component.html',
   styleUrls: ['./note-editor-component.css']
 })
-export class NoteEditorComponent implements OnInit, AfterViewInit {
+export class NoteEditorComponent implements OnInit, AfterViewInit, AfterViewChecked {
   note?: Note;
-  showTextColorPicker = false;
-  showBgColorPicker = false;
-  sidebarCollapsed = false;
 
-  // Page background colors (note cover tint)
+  showTextColorPicker = false;
+  showHighlightPicker = false;
+  showPageColorPicker = false;
+
   pageColors: string[] = [
     '#ffffff', '#fdecec', '#fef3cd', '#e8f5e9',
     '#e3f2fd', '#f3e5f5', '#fce4ec', '#f0f4f8', '#fff8e1'
   ];
 
-  // Text colors for the font color picker
   textColors: string[] = [
-    '#37352f', // default black
-    '#e03e3e', // red
-    '#d9730d', // orange
-    '#dfab01', // yellow
-    '#0f7b6c', // green
-    '#0b6e99', // blue
-    '#6940a5', // purple
-    '#ad1a72', // pink
-    '#9b9a97', // gray
+    '#37352f', '#e03e3e', '#d9730d', '#dfab01',
+    '#0f7b6c', '#0b6e99', '#6940a5', '#ad1a72', '#9b9a97',
   ];
 
-  // Text highlight colors
   highlightColors: string[] = [
-    'transparent',
-    '#ffdede', '#fde8c8', '#fef9c3',
-    '#d4edda', '#d0e8f1', '#e8d8f5', '#fddde6',
-    '#e0e0e0',
+    'remove', '#ffdede', '#fde8c8', '#fef9c3',
+    '#d4edda', '#d0e8f1', '#e8d8f5', '#fddde6', '#e0e0e0',
   ];
 
   @ViewChild('editorDiv') editorDiv!: ElementRef<HTMLDivElement>;
 
-  private noteId: string | null = null;
   private contentInitialized = false;
+  // Stores the saved selection range so we can restore it before execCommand
+  private savedRange: Range | null = null;
 
   constructor(
     private route: ActivatedRoute,
     private noteService: NoteService,
-    private router: Router
+    private router: Router,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
-      this.noteId = params.get('id');
+      const id = params.get('id');
       this.contentInitialized = false;
-      if (this.noteId) {
-        this.note = this.noteService.getNoteById(this.noteId);
+      if (id) {
+        this.note = this.noteService.getNoteById(id);
         if (!this.note) this.router.navigate(['/notes']);
       }
     });
   }
 
-  ngAfterViewInit(): void {
-    this.initEditorContent();
-  }
-
-  // KEY FIX: Only set innerHTML once on load, never again on keystroke
-  private initEditorContent(): void {
-    if (this.contentInitialized || !this.editorDiv || !this.note) return;
-    this.editorDiv.nativeElement.innerHTML = this.note.content || '';
-    this.contentInitialized = true;
-  }
+  ngAfterViewInit(): void { this.initEditorContent(); }
 
   ngAfterViewChecked(): void {
-    if (!this.contentInitialized && this.editorDiv && this.note) {
+    if (!this.contentInitialized && this.editorDiv?.nativeElement && this.note) {
       this.initEditorContent();
     }
   }
 
-  execCommand(command: string, value: string = '') {
-    this.editorDiv.nativeElement.focus();
-    document.execCommand(command, false, value || undefined);
-    this.saveContent();
+  private initEditorContent(): void {
+    if (this.contentInitialized || !this.editorDiv?.nativeElement || !this.note) return;
+    this.editorDiv.nativeElement.innerHTML = this.note.content || '';
+    this.contentInitialized = true;
   }
 
-  applyTextColor(color: string) {
+  // ── SELECTION MANAGEMENT ──
+  // Called on every mouseup/keyup in the editor to remember the caret/selection
+  onSelectionChange(): void {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      const range = sel.getRangeAt(0);
+      // Only save if selection is inside our editor
+      if (this.editorDiv?.nativeElement.contains(range.commonAncestorContainer)) {
+        this.savedRange = range.cloneRange();
+      }
+    }
+  }
+
+  // Restores the saved selection into the editor before running execCommand
+  private restoreSelection(): void {
     this.editorDiv.nativeElement.focus();
+    if (this.savedRange) {
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(this.savedRange);
+      }
+    }
+  }
+
+  // ── FORMATTING COMMANDS ──
+  execCommand(command: string, value?: string): void {
+    this.restoreSelection();
+    document.execCommand(command, false, value);
+    this.saveContent();
+    this.closeAllPickers();
+  }
+
+  applyTextColor(color: string): void {
+    this.restoreSelection();
     document.execCommand('foreColor', false, color);
     this.saveContent();
     this.showTextColorPicker = false;
   }
 
-  applyHighlight(color: string) {
-    this.editorDiv.nativeElement.focus();
-    if (color === 'transparent') {
-      document.execCommand('removeFormat', false, undefined);
+  applyHighlight(color: string): void {
+    this.restoreSelection();
+    if (color === 'remove') {
+      // Remove only background color, not all formatting
+      document.execCommand('hiliteColor', false, 'transparent');
     } else {
       document.execCommand('hiliteColor', false, color);
     }
     this.saveContent();
-    this.showBgColorPicker = false;
+    this.showHighlightPicker = false;
   }
 
-  onContentChange(event: Event) {
+  onContentChange(event: Event): void {
     const el = event.target as HTMLElement;
     if (this.note) {
       this.note.content = el.innerHTML;
@@ -117,43 +136,75 @@ export class NoteEditorComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private saveContent() {
-    if (this.note && this.editorDiv) {
+  private saveContent(): void {
+    if (this.note && this.editorDiv?.nativeElement) {
       this.note.content = this.editorDiv.nativeElement.innerHTML;
       this.noteService.updateNote(this.note);
     }
   }
 
-  togglePin() {
+  // ── NOTE ACTIONS ──
+  togglePin(): void {
     if (this.note) { this.note.isPinned = !this.note.isPinned; this.save(); }
   }
 
-  changeColor(color: string) {
+  changeColor(color: string): void {
     if (this.note) { this.note.color = color; this.save(); }
+    this.showPageColorPicker = false;
   }
 
-  moveToTrash() {
+  moveToTrash(): void {
     if (this.note) {
       this.noteService.moveToTrash(this.note.id);
       this.router.navigate(['/notes']);
     }
   }
 
-  goBack() { this.router.navigate(['/notes']); }
+  goBack(): void { this.router.navigate(['/notes']); }
 
-  save() {
+  save(): void {
     if (this.note) {
       this.note.updatedAt = Date.now();
       this.noteService.updateNote(this.note);
     }
   }
 
-  downloadAsPdf() {
+  // ── PICKER TOGGLES ──
+  // Each toggle: stop propagation so the document click listener doesn't immediately close it
+  toggleTextColorPicker(e: MouseEvent): void {
+    e.stopPropagation();
+    this.showTextColorPicker = !this.showTextColorPicker;
+    this.showHighlightPicker = false;
+    this.showPageColorPicker = false;
+  }
+
+  toggleHighlightPicker(e: MouseEvent): void {
+    e.stopPropagation();
+    this.showHighlightPicker = !this.showHighlightPicker;
+    this.showTextColorPicker = false;
+    this.showPageColorPicker = false;
+  }
+
+  togglePageColorPicker(e: MouseEvent): void {
+    e.stopPropagation();
+    this.showPageColorPicker = !this.showPageColorPicker;
+    this.showTextColorPicker = false;
+    this.showHighlightPicker = false;
+  }
+
+  closeAllPickers(): void {
+    this.showTextColorPicker = false;
+    this.showHighlightPicker = false;
+    this.showPageColorPicker = false;
+  }
+
+  stopProp(e: MouseEvent): void { e.stopPropagation(); }
+
+  // ── PDF DOWNLOAD ──
+  downloadAsPdf(): void {
     if (!this.note) return;
     const title = this.note.title || 'Untitled';
     const content = this.note.content || '';
-
-    // Build a clean printable HTML page
     const printHtml = `<!DOCTYPE html>
 <html>
 <head>
@@ -162,63 +213,24 @@ export class NoteEditorComponent implements OnInit, AfterViewInit {
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', -apple-system, sans-serif;
-      font-size: 15px;
-      color: #37352f;
-      line-height: 1.75;
-      background: #fff;
-      padding: 60px 80px;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    h1.note-title {
-      font-size: 36px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      margin-bottom: 8px;
-      color: #37352f;
-    }
-    .note-meta {
-      font-size: 12px;
-      color: #9b9a97;
-      margin-bottom: 32px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #e9e9e7;
-    }
+    body { font-family: 'Inter', sans-serif; font-size: 15px; color: #37352f;
+           line-height: 1.75; background: #fff; padding: 60px 80px; max-width: 800px; margin: 0 auto; }
+    h1.note-title { font-size: 36px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 8px; }
+    .note-meta { font-size: 12px; color: #9b9a97; margin-bottom: 32px; padding-bottom: 16px;
+                 border-bottom: 1px solid #e9e9e7; }
     .note-body { word-break: break-word; }
     ul, ol { padding-left: 24px; margin: 8px 0; }
-    b, strong { font-weight: 600; }
   </style>
 </head>
 <body>
   <h1 class="note-title">${title}</h1>
   <div class="note-meta">Last edited: ${new Date(this.note.updatedAt).toLocaleString()}</div>
   <div class="note-body">${content}</div>
-  <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); }<\/script>
-</body>
-</html>`;
-
+  <script>window.onload=()=>{window.print();window.onafterprint=()=>window.close();}<\/script>
+</body></html>`;
     const blob = new Blob([printHtml], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     const win = window.open(url, '_blank');
-    if (win) {
-      win.onload = () => URL.revokeObjectURL(url);
-    }
-  }
-
-  toggleTextColorPicker() {
-    this.showTextColorPicker = !this.showTextColorPicker;
-    this.showBgColorPicker = false;
-  }
-
-  toggleBgColorPicker() {
-    this.showBgColorPicker = !this.showBgColorPicker;
-    this.showTextColorPicker = false;
-  }
-
-  closeAllPickers() {
-    this.showTextColorPicker = false;
-    this.showBgColorPicker = false;
+    if (win) win.onload = () => URL.revokeObjectURL(url);
   }
 }

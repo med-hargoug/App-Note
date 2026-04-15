@@ -24,7 +24,7 @@
   height: 24px;
   background: var(--notion-text);
   color: var(--notion-bg);
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 700;
   display: flex;
@@ -53,7 +53,7 @@
   padding: 6px 10px;
   background: transparent;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   color: var(--notion-text-secondary);
   font-size: 13px;
   font-family: var(--font);
@@ -77,7 +77,7 @@
   align-items: center;
   gap: 8px;
   padding: 5px 10px;
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   color: var(--notion-text-secondary);
   font-size: 13px;
   cursor: pointer;
@@ -155,7 +155,7 @@
   flex: 1;
   background: transparent;
   border: 1px solid var(--notion-accent);
-  border-radius: 3px;
+  border-radius: 6px;
   padding: 1px 4px;
   font-size: 13px;
   font-family: var(--font);
@@ -167,7 +167,7 @@
 .icon-btn {
   background: transparent;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 6px;
   color: var(--notion-text-secondary);
   cursor: pointer;
   padding: 3px;
@@ -196,7 +196,7 @@
   width: 100%;
   background: var(--notion-bg);
   border: 1px solid var(--notion-accent);
-  border-radius: var(--radius-sm);
+  border-radius: 6px;
   padding: 4px 8px;
   font-size: 13px;
   font-family: var(--font);

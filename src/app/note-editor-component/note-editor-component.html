@@ -17,11 +17,10 @@
     <div class="toolbar-actions">
 
       <!-- Bold / Italic / Underline / Strike -->
-      <button class="toolbar-btn" (click)="execCommand('bold')" title="Bold"><b>B</b></button>
-      <button class="toolbar-btn" (click)="execCommand('italic')" title="Italic"><i>I</i></button>
-      <button class="toolbar-btn" (click)="execCommand('underline')" title="Underline"><u>U</u></button>
-      <button class="toolbar-btn" (click)="execCommand('strikeThrough')" title="Strikethrough"><s>S</s></button>
-
+      <button class="toolbar-btn" (mousedown)="$event.preventDefault(); execCommand('bold')" title="Bold"><b>B</b></button>
+      <button class="toolbar-btn" (mousedown)="$event.preventDefault(); execCommand('italic')" title="Italic"><i>I</i></button>
+      <button class="toolbar-btn" (mousedown)="$event.preventDefault()" (click)="execCommand('underline')" title="Underline"><u>U</u></button>
+      <button class="toolbar-btn" (mousedown)="$event.preventDefault()" (click)="execCommand('strikeThrough')" title="Strikethrough"><s>S</s></button>
       <div class="toolbar-sep"></div>
 
       <!-- TEXT COLOR — click to open, stopProp on panel so clicks inside don't close it -->
@@ -38,8 +37,8 @@
             <button *ngFor="let c of textColors"
               class="color-swatch"
               [style.background]="c"
-              (click)="applyTextColor(c)"
-              [title]="c">
+               (mousedown)="$event.preventDefault(); applyTextColor(c)"
+               [title]="c">
             </button>
           </div>
         </div>
@@ -58,11 +57,11 @@
           <div class="color-swatches">
             <button *ngFor="let c of highlightColors"
               class="color-swatch"
-              [class.swatch-remove]="c === 'remove'"
-              [style.background]="c === 'remove' ? '' : c"
-              (click)="applyHighlight(c)"
-              [title]="c === 'remove' ? 'Remove highlight' : c">
-              <svg *ngIf="c === 'remove'" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+               [class.swatch-remove]="c === 'remove'"
+               [style.background]="c === 'remove' ? '' : c"
+               (mousedown)="$event.preventDefault(); applyHighlight(c)"
+               [title]="c === 'remove' ? 'Remove highlight' : c">
+                 <svg *ngIf="c === 'remove'" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
         </div>
@@ -134,13 +133,17 @@
   <div class="editor-shell">
     <div class="page-emoji">📝</div>
 
-    <input
+    <div
+      #titleDiv
       class="editor-title"
-      [(ngModel)]="note.title"
-      (input)="save()"
-      placeholder="Untitled"
+      contenteditable="true"
+      (input)="onTitleChange($event)"
+      (mouseup)="onSelectionChange()"
+      (keyup)="onSelectionChange()"
+      (blur)="onSelectionChange()"
+      data-placeholder="Untitled"
       spellcheck="true">
-
+    </div>
     <div
       #editorDiv
       id="notion-editor"
@@ -149,6 +152,7 @@
       (input)="onContentChange($event)"
       (mouseup)="onSelectionChange()"
       (keyup)="onSelectionChange()"
+      (blur)="onSelectionChange()"
       data-placeholder="Start writing…">
     </div>
   </div>

@@ -9,7 +9,7 @@ import { Note } from '../interface/note-interface';
 import { FormsModule } from '@angular/forms';
 import { TimeAgoPipe } from '../time-ago-pipe-pipe';
 import { jsPDF } from 'jspdf';
-import * as html2pdf from 'html2pdf.js';
+
 
 @Component({
   selector: 'app-note-editor',
@@ -74,10 +74,13 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, AfterViewChec
   }
 
   private initEditorContent(): void {
-    if (this.contentInitialized || !this.editorDiv?.nativeElement || !this.note) return;
-    this.editorDiv.nativeElement.innerHTML = this.note.content || '';
-    this.contentInitialized = true;
+  if (this.contentInitialized || !this.editorDiv?.nativeElement || !this.note) return;
+  this.editorDiv.nativeElement.innerHTML = this.note.content || '';
+  if (this.titleDiv?.nativeElement) {
+    this.titleDiv.nativeElement.innerHTML = this.note.title || '';
   }
+  this.contentInitialized = true;
+}
 
   // ── SELECTION MANAGEMENT ──
   // Called on every mouseup/keyup in the editor to remember the caret/selection
@@ -85,24 +88,31 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, AfterViewChec
     const sel = window.getSelection();
     if (sel && sel.rangeCount > 0) {
       const range = sel.getRangeAt(0);
-      // Only save if selection is inside our editor
-      if (this.editorDiv?.nativeElement.contains(range.commonAncestorContainer)) {
-        this.savedRange = range.cloneRange();
-      }
+    if (this.editorDiv?.nativeElement.contains(range.commonAncestorContainer)) {
+      this.savedRange = range.cloneRange();
+      this.activeEditable = this.editorDiv.nativeElement;
+       } else if (this.titleDiv?.nativeElement.contains(range.commonAncestorContainer)) {
+         this.savedRange = range.cloneRange();
+         this.activeEditable = this.titleDiv.nativeElement;
+       }
     }
   }
 
   // Restores the saved selection into the editor before running execCommand
   private restoreSelection(): void {
+  if (this.activeEditable) {
+    this.activeEditable.focus();
+  } else {
     this.editorDiv.nativeElement.focus();
-    if (this.savedRange) {
-      const sel = window.getSelection();
-      if (sel) {
-        sel.removeAllRanges();
-        sel.addRange(this.savedRange);
-      }
+  }
+  if (this.savedRange) {
+    const sel = window.getSelection();
+    if (sel) {
+      sel.removeAllRanges();
+      sel.addRange(this.savedRange);
     }
   }
+}
 
   // ── FORMATTING COMMANDS ──
   execCommand(command: string, value?: string): void {
@@ -204,24 +214,261 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, AfterViewChec
 
   stopProp(e: MouseEvent): void { e.stopPropagation(); }
 
-downloadAsPDF() {
+downloadAsPDF(): void {
+  if (!this.note) return;
+
+  const title = this.note.title || 'Untitled Note';
   const doc = new jsPDF();
-  
-  const title = this.note?.title || 'Untitled Note';
-  const rawContent = this.note?.content || '';
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 20;
+  const maxWidth = pageWidth - margin * 2;
+  let y = 20;
+  let currentMargin = margin;
 
-  // NEW STEP: This line removes all <tags> like <div>, <p>, <b> etc.
-  const cleanText = rawContent.replace(/<[^>]*>/g, ''); 
+  const addNewPageIfNeeded = () => {
+    if (y > 270) { doc.addPage(); y = 20; }
+  };
 
-  doc.setFontSize(22);
-  doc.text(title, 20, 20);
-  
-  doc.setFontSize(12);
-  // We use the 'cleanText' here instead of 'rawContent'
-  const splitContent = doc.splitTextToSize(cleanText, 170); 
-  doc.text(splitContent, 20, 40);
+  const hexToRgb = (color: string): [number, number, number] => {
+    if (color.startsWith('rgb')) {
+      const match = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      if (match) return [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])];
+    }
+    if (color.startsWith('#')) {
+      const clean = color.replace('#', '');
+      const bigint = parseInt(clean, 16);
+      return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+    }
+    return [55, 53, 47];
+  };
+
+  // Collect all text segments from a node with their styles
+  const collectSegments = (node: Node, inheritedStyle: {
+    bold: boolean; italic: boolean; underline: boolean;
+    strike: boolean; color: string; fontSize: number;
+  }): Array<{text: string; style: typeof inheritedStyle}> => {
+    const segments: Array<{text: string; style: typeof inheritedStyle}> = [];
+
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = (node.textContent || '').replace(/\u00A0/g, ' ');
+      if (text.trim()) segments.push({ text, style: { ...inheritedStyle } });
+      return segments;
+    }
+
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const el = node as HTMLElement;
+      const tag = el.tagName.toLowerCase();
+      const style = { ...inheritedStyle };
+
+      const inlineColor = el.style.color || el.getAttribute('color') || '';
+      const inlineFontWeight = el.style.fontWeight;
+      const inlineFontStyle = el.style.fontStyle;
+      const inlineTextDec = el.style.textDecoration;
+
+      if (tag === 'b' || tag === 'strong' || inlineFontWeight === 'bold' || inlineFontWeight === '700') style.bold = true;
+      if (inlineFontWeight === 'normal') style.bold = false;
+      if (tag === 'i' || tag === 'em' || inlineFontStyle === 'italic') style.italic = true;
+      if (tag === 'u' || inlineTextDec?.includes('underline')) style.underline = true;
+      if (tag === 's' || tag === 'strike' || inlineTextDec?.includes('line-through')) style.strike = true;
+      if (inlineColor && (inlineColor.startsWith('#') || inlineColor.startsWith('rgb'))) {
+        style.color = inlineColor;
+      }
+
+      el.childNodes.forEach(child => {
+        segments.push(...collectSegments(child, style));
+      });
+    }
+
+    return segments;
+  };
+
+  // Render a line of segments at current y position
+  const renderSegments = (segments: Array<{text: string; style: {
+    bold: boolean; italic: boolean; underline: boolean;
+    strike: boolean; color: string; fontSize: number;
+  }}>, xStart: number) => {
+    if (segments.length === 0) return;
+
+    let x = xStart;
+    const lineHeight = segments[0].style.fontSize * 0.5;
+
+    segments.forEach(seg => {
+      let fontStyle = 'normal';
+      if (seg.style.bold && seg.style.italic) fontStyle = 'bolditalic';
+      else if (seg.style.bold) fontStyle = 'bold';
+      else if (seg.style.italic) fontStyle = 'italic';
+
+      doc.setFont('helvetica', fontStyle);
+      doc.setFontSize(seg.style.fontSize);
+
+      const [r, g, b] = hexToRgb(seg.style.color);
+      doc.setTextColor(r, g, b);
+
+      doc.text(seg.text, x, y);
+
+      const textWidth = doc.getStringUnitWidth(seg.text) * seg.style.fontSize / doc.internal.scaleFactor;
+
+      if (seg.style.underline) {
+        doc.setDrawColor(r, g, b);
+        doc.line(x, y + 1, x + textWidth, y + 1);
+      }
+      if (seg.style.strike) {
+        doc.setDrawColor(r, g, b);
+        doc.line(x, y - 3, x + textWidth, y - 3);
+      }
+
+      x += textWidth;
+    });
+
+    y += segments[0].style.fontSize * 0.5;
+  };
+
+  // Process a block element — collect its segments and render as one line
+  const processBlock = (node: Node, inheritedStyle: {
+    bold: boolean; italic: boolean; underline: boolean;
+    strike: boolean; color: string; fontSize: number;
+  }) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = (node.textContent || '').replace(/\u00A0/g, ' ').trim();
+      if (!text) return;
+      const segments = [{ text, style: { ...inheritedStyle } }];
+      addNewPageIfNeeded();
+      renderSegments(segments, currentMargin);
+      return;
+    }
+
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+    const el = node as HTMLElement;
+    const tag = el.tagName.toLowerCase();
+    const style = { ...inheritedStyle };
+
+    const inlineColor = el.style.color || el.getAttribute('color') || '';
+    const inlineFontWeight = el.style.fontWeight;
+    const inlineFontStyle = el.style.fontStyle;
+    const inlineTextDec = el.style.textDecoration;
+
+    if (tag === 'b' || tag === 'strong' || inlineFontWeight === 'bold' || inlineFontWeight === '700') style.bold = true;
+    if (inlineFontWeight === 'normal') style.bold = false;
+    if (tag === 'i' || tag === 'em' || inlineFontStyle === 'italic') style.italic = true;
+    if (tag === 'u' || inlineTextDec?.includes('underline')) style.underline = true;
+    if (tag === 's' || tag === 'strike' || inlineTextDec?.includes('line-through')) style.strike = true;
+    if (inlineColor && (inlineColor.startsWith('#') || inlineColor.startsWith('rgb'))) {
+      style.color = inlineColor;
+    }
+    if (tag === 'h1') { style.bold = true; style.fontSize = 18; }
+    if (tag === 'h2') { style.bold = true; style.fontSize = 15; }
+    if (tag === 'h3') { style.bold = true; style.fontSize = 13; }
+
+    if (tag === 'p' || tag === 'div') {
+      const segments = collectSegments(el, style);
+      if (segments.length > 0) {
+        addNewPageIfNeeded();
+        renderSegments(segments, currentMargin);
+      }
+      y += 3;
+      return;
+    }
+
+    if (tag === 'br') {
+      y += style.fontSize * 0.4;
+      return;
+    }
+
+    if (tag === 'ul' || tag === 'ol') {
+      const getLiItems = (element: HTMLElement): HTMLElement[] => {
+        const result: HTMLElement[] = [];
+        element.childNodes.forEach(child => {
+          const c = child as HTMLElement;
+          const t = c.tagName?.toLowerCase();
+          if (t === 'li') {
+            const children = Array.from(c.childNodes).filter(n => (n as HTMLElement).tagName);
+            const onlyHasNestedList = children.length === 1 &&
+              ['ol', 'ul'].includes((children[0] as HTMLElement).tagName?.toLowerCase());
+            if (onlyHasNestedList) {
+              result.push(...getLiItems(children[0] as HTMLElement));
+            } else {
+              result.push(c);
+            }
+          } else if (t === 'ol' || t === 'ul') {
+            result.push(...getLiItems(c));
+          }
+        });
+        return result;
+      };
+
+      const items = getLiItems(el);
+      items.forEach((liEl, index) => {
+        const bullet = tag === 'ol' ? `${index + 1}.` : '•';
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(style.fontSize);
+        doc.setTextColor(55, 53, 47);
+        doc.text(bullet, margin, y);
+
+        currentMargin = margin + 10;
+        const segments = collectSegments(liEl, style);
+        if (segments.length > 0) {
+          addNewPageIfNeeded();
+          renderSegments(segments, currentMargin);
+        }
+        currentMargin = margin;
+        y += 2;
+      });
+
+      y += 4;
+      return;
+    }
+
+    // inline/other elements — collect and render
+    const segments = collectSegments(el, style);
+    if (segments.length > 0) {
+      addNewPageIfNeeded();
+      renderSegments(segments, currentMargin);
+    }
+  };
+
+  const defaultStyle = {
+    bold: false, italic: false, underline: false,
+    strike: false, color: '#37352f', fontSize: 12,
+  };
+
+  // ── Title ──
+  const titleHTML = this.titleDiv?.nativeElement?.innerHTML || title;
+  const titleParser = new DOMParser();
+  const titleDoc = titleParser.parseFromString(titleHTML, 'text/html');
+  const titleStyle = { ...defaultStyle, bold: true, fontSize: 22 };
+  const titleSegments = collectSegments(titleDoc.body, titleStyle);
+  if (titleSegments.length > 0) {
+    addNewPageIfNeeded();
+    renderSegments(titleSegments, margin);
+  } else {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.setTextColor(55, 53, 47);
+    doc.text(title, margin, y);
+    y += 22 * 0.5;
+  }
+  y += 4;
+
+  // ── Divider ──
+  doc.setDrawColor(200, 200, 200);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 8;
+
+  // ── Content ──
+  const parser = new DOMParser();
+  const htmlDoc = parser.parseFromString(this.note.content || '', 'text/html');
+  htmlDoc.body.childNodes.forEach(node => processBlock(node, defaultStyle));
 
   doc.save(`${title.replace(/\s+/g, '_')}.pdf`);
 }
-
+@ViewChild('titleDiv') titleDiv!: ElementRef<HTMLDivElement>;
+onTitleChange(event: Event): void {
+  const el = event.target as HTMLElement;
+  if (this.note) {
+    this.note.title = el.innerHTML;  // ← save HTML not plain text
+    this.noteService.updateNote(this.note);
+  }
+}
+private activeEditable: HTMLElement | null = null;
 }

@@ -194,6 +194,11 @@
   margin: 0 auto;
   padding: 48px 96px 80px;
 }
+.editor-title:empty::before {
+  content: attr(data-placeholder);
+  color: var(--notion-text-tertiary);
+  pointer-events: none;
+}
 
 .page-emoji {
   font-size: 48px;

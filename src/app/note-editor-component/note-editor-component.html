@@ -135,15 +135,13 @@
 
     <div
       #titleDiv
-      class="editor-title"
+       class="editor-title"
       contenteditable="true"
-      (input)="onTitleChange($event)"
-      (mouseup)="onSelectionChange()"
-      (keyup)="onSelectionChange()"
-      (blur)="onSelectionChange()"
-      data-placeholder="Untitled"
-      spellcheck="true">
+       (input)="onTitleChange($event)"
+        data-placeholder="Untitled"
+       spellcheck="true">
     </div>
+
     <div
       #editorDiv
       id="notion-editor"

@@ -1,40 +1,31 @@
-<!-- GRID VIEW -->
-<div *ngIf="displayMode === 'grid'"
-  class="note-card grid-card"
-  (click)="onOpen()"
-  [style.background]="cardColor !== 'transparent' ? cardColor + '22' : ''"
-  [style.border-color]="cardColor !== 'transparent' ? cardColor + '55' : ''">
+<!-- GRID MODE -->
+<div class="note-card grid-card" *ngIf="displayMode === 'grid'" (click)="onOpen()">
 
-  <div class="card-color-bar" *ngIf="cardColor !== 'transparent'" [style.background]="cardColor"></div>
+  <div class="card-header" [style.background]="getHeaderGradient(note.color)">
+    <span class="card-emoji">📝</span>
+    <span class="card-pin" *ngIf="note.isPinned">📌</span>
+  </div>
 
   <div class="card-body">
-    <div class="card-title-row">
-      <span class="card-title" [innerHTML]="(note.title || 'Untitled') | highlight:searchTerm"></span>
-      <span class="pin-badge" *ngIf="note.isPinned" title="Pinned">📌</span>
-    </div>
-    <p class="card-preview" [innerHTML]="(note.content | truncate:120) | highlight:searchTerm"></p>
+    <p class="card-title" [class.untitled]="!note.title">
+      {{ getPlainTitle(note.title) || 'Untitled' }}
+    </p>
+    <p class="card-preview" [class.empty]="!getPlainText(note.content)">
+      {{ getPlainText(note.content) || 'No content yet...' }}
+    </p>
   </div>
 
   <div class="card-footer">
-    <span class="card-time">{{ note.updatedAt | timeAgo }}</span>
+    <span class="card-date">{{ note.updatedAt | timeAgo }}</span>
   </div>
+
 </div>
 
-<!-- LIST VIEW -->
-<div *ngIf="displayMode === 'list'"
-  class="note-card list-card"
-  (click)="onOpen()">
-
-  <div class="list-color-dot" *ngIf="cardColor !== 'transparent'" [style.background]="cardColor"></div>
-  <div class="list-emoji" *ngIf="cardColor === 'transparent'">📄</div>
-
-  <div class="list-body">
-    <span class="list-title" [innerHTML]="(note.title || 'Untitled') | highlight:searchTerm"></span>
-    <span class="list-preview" [innerHTML]="(note.content | truncate:60) | highlight:searchTerm"></span>
-  </div>
-
-  <div class="list-meta">
-    <span class="pin-badge" *ngIf="note.isPinned">📌</span>
-    <span class="card-time">{{ note.updatedAt | timeAgo }}</span>
-  </div>
+<!-- LIST MODE -->
+<div class="note-card list-card" *ngIf="displayMode === 'list'" (click)="onOpen()">
+  <span class="list-emoji">📝</span>
+  <span class="list-title" [class.untitled]="!note.title">{{ note.title || 'Untitled' }}</span>
+  <span class="list-preview">{{ getPlainText(note.content) }}</span>
+  <span class="list-date">{{ note.updatedAt | timeAgo }}</span>
+  <span class="list-pin" *ngIf="note.isPinned">📌</span>
 </div>

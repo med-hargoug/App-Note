@@ -1,31 +1,24 @@
 <!-- GRID MODE -->
 <div class="note-card grid-card" *ngIf="displayMode === 'grid'" (click)="onOpen()">
-
   <div class="card-header" [style.background]="getHeaderGradient(note.color)">
     <span class="card-emoji">📝</span>
     <span class="card-pin" *ngIf="note.isPinned">📌</span>
   </div>
-
   <div class="card-body">
-    <p class="card-title" [class.untitled]="!note.title">
-      {{ getPlainTitle(note.title) || 'Untitled' }}
-    </p>
-    <p class="card-preview" [class.empty]="!getPlainText(note.content)">
-      {{ getPlainText(note.content) || 'No content yet...' }}
-    </p>
+    <!-- [innerHTML] renders the highlight <mark> tags safely via DomSanitizer -->
+    <p class="card-title" [class.untitled]="!note.title" [innerHTML]="safeTitle"></p>
+    <p class="card-preview" [class.empty]="!getPlainText(note.content)" [innerHTML]="safePreview"></p>
   </div>
-
   <div class="card-footer">
     <span class="card-date">{{ note.updatedAt | timeAgo }}</span>
   </div>
-
 </div>
 
 <!-- LIST MODE -->
 <div class="note-card list-card" *ngIf="displayMode === 'list'" (click)="onOpen()">
   <span class="list-emoji">📝</span>
-  <span class="list-title" [class.untitled]="!note.title">{{ note.title || 'Untitled' }}</span>
-  <span class="list-preview">{{ getPlainText(note.content) }}</span>
+  <span class="list-title" [class.untitled]="!note.title" [innerHTML]="safeTitle"></span>
+  <span class="list-preview" [innerHTML]="safePreview"></span>
   <span class="list-date">{{ note.updatedAt | timeAgo }}</span>
   <span class="list-pin" *ngIf="note.isPinned">📌</span>
 </div>

@@ -26,8 +26,8 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, AfterViewChec
   showPageColorPicker = false;
 
   pageColors: string[] = [
-    '#ffffff', '#fdecec', '#fef3cd', '#e8f5e9',
-    '#e3f2fd', '#f3e5f5', '#fce4ec', '#f0f4f8', '#fff8e1'
+    '#ffffff', '#ff7b7b', '#ffe482', '#73f37e',
+    '#79c7ff', '#e379f4', '#f3739e', '#7ebeff', '#ffde72'
   ];
 
   textColors: string[] = [

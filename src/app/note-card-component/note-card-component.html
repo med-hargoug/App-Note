@@ -1,6 +1,9 @@
 <!-- GRID MODE -->
 <div class="note-card grid-card" *ngIf="displayMode === 'grid'" (click)="onOpen()">
-  <div class="card-header" [style.background]="getHeaderGradient(note.color)">
+  <div class="card-header" 
+  [style.background]="getHeaderGradient(note)"
+  [style.background-size]="'cover'"
+  [style.background-position]="'center'">
     <span class="card-emoji">📝</span>
     <span class="card-pin" *ngIf="note.isPinned">📌</span>
   </div>

@@ -1,4 +1,3 @@
-<!-- Close all pickers when clicking anywhere on page -->
 <div class="editor-page" *ngIf="note"
      [style.background]="note.color && note.color !== '#ffffff' ? note.color + '28' : ''"
      (click)="closeAllPickers()">
@@ -6,7 +5,6 @@
   <!-- ── TOP BAR ── -->
   <div class="editor-topbar">
 
-    <!-- Back button — pushed right so it clears the sidebar toggle -->
     <button class="back-btn" (click)="goBack()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
       Back
@@ -15,15 +13,19 @@
     <div class="toolbar-divider-v"></div>
 
     <div class="toolbar-actions">
-
-      <!-- Bold / Italic / Underline / Strike -->
       <button class="toolbar-btn" (mousedown)="$event.preventDefault(); execCommand('bold')" title="Bold"><b>B</b></button>
       <button class="toolbar-btn" (mousedown)="$event.preventDefault(); execCommand('italic')" title="Italic"><i>I</i></button>
-      <button class="toolbar-btn" (mousedown)="$event.preventDefault()" (click)="execCommand('underline')" title="Underline"><u>U</u></button>
-      <button class="toolbar-btn" (mousedown)="$event.preventDefault()" (click)="execCommand('strikeThrough')" title="Strikethrough"><s>S</s></button>
+     <button class="toolbar-btn"
+  (mousedown)="$event.preventDefault()"
+  (mouseup)="applyUnderline()"
+  title="Underline"><u>U</u></button>
+
+<button class="toolbar-btn"
+  (mousedown)="$event.preventDefault()"
+  (mouseup)="applyStrike()"
+  title="Strikethrough"><s>S</s></button>
       <div class="toolbar-sep"></div>
 
-      <!-- TEXT COLOR — click to open, stopProp on panel so clicks inside don't close it -->
       <div class="picker-wrap">
         <button class="toolbar-btn picker-trigger" (click)="toggleTextColorPicker($event)" title="Text color">
           <span class="picker-icon">
@@ -37,14 +39,13 @@
             <button *ngFor="let c of textColors"
               class="color-swatch"
               [style.background]="c"
-               (mousedown)="$event.preventDefault(); applyTextColor(c)"
-               [title]="c">
+              (mousedown)="$event.preventDefault(); applyTextColor(c)"
+              [title]="c">
             </button>
           </div>
         </div>
       </div>
 
-      <!-- HIGHLIGHT — same click pattern -->
       <div class="picker-wrap">
         <button class="toolbar-btn picker-trigger" (click)="toggleHighlightPicker($event)" title="Highlight">
           <span class="picker-icon">
@@ -57,11 +58,11 @@
           <div class="color-swatches">
             <button *ngFor="let c of highlightColors"
               class="color-swatch"
-               [class.swatch-remove]="c === 'remove'"
-               [style.background]="c === 'remove' ? '' : c"
-               (mousedown)="$event.preventDefault(); applyHighlight(c)"
-               [title]="c === 'remove' ? 'Remove highlight' : c">
-                 <svg *ngIf="c === 'remove'" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              [class.swatch-remove]="c === 'remove'"
+              [style.background]="c === 'remove' ? '' : c"
+              (mousedown)="$event.preventDefault(); applyHighlight(c)"
+              [title]="c === 'remove' ? 'Remove highlight' : c">
+              <svg *ngIf="c === 'remove'" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
         </div>
@@ -69,22 +70,19 @@
 
       <div class="toolbar-sep"></div>
 
-      <!-- Lists -->
-      <button class="toolbar-btn" (click)="execCommand('insertUnorderedList')" title="Bullet list">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor"/><circle cx="4" cy="12" r="1.5" fill="currentColor"/><circle cx="4" cy="18" r="1.5" fill="currentColor"/></svg>
-      </button>
-      <button class="toolbar-btn" (click)="execCommand('insertOrderedList')" title="Numbered list">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4M4 10h2M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
-      </button>
+      <button class="toolbar-btn" (mousedown)="$event.preventDefault(); execCommand('insertUnorderedList')" title="Bullet list">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor"/><circle cx="4" cy="12" r="1.5" fill="currentColor"/><circle cx="4" cy="18" r="1.5" fill="currentColor"/></svg>
+</button>
+<button class="toolbar-btn" (mousedown)="$event.preventDefault(); execCommand('insertOrderedList')" title="Numbered list">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4M4 10h2M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+</button>
 
       <div class="toolbar-sep"></div>
 
-      <!-- Pin -->
       <button class="toolbar-btn" [class.active]="note.isPinned" (click)="togglePin()" title="Pin note">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       </button>
 
-      <!-- PAGE COLOR — click toggle, panel stops propagation -->
       <div class="picker-wrap">
         <button class="toolbar-btn picker-trigger" (click)="togglePageColorPicker($event)" title="Page color">
           <span class="picker-icon">
@@ -105,23 +103,16 @@
           </div>
         </div>
       </div>
-      
 
       <div class="toolbar-sep"></div>
-          
 
-
-      <!-- PDF -->
       <button class="toolbar-btn pdf-btn" (click)="downloadAsPDF()" title="Download as PDF">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
         PDF
       </button>
-     
-      
 
       <div class="toolbar-sep"></div>
-  
-      <!-- Trash -->
+
       <button class="toolbar-btn danger" (click)="moveToTrash()" title="Move to trash">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 3h6"/></svg>
       </button>
@@ -129,18 +120,48 @@
     </div>
   </div>
 
+  <!-- ── COVER IMAGE ── -->
+  <div class="cover-container" *ngIf="hasCover()">
+    <img [src]="note!.coverImage" class="cover-image" alt="cover"/>
+    <div class="cover-actions">
+      <button class="cover-btn" (click)="triggerCoverUpload()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Change cover
+      </button>
+      <button class="cover-btn danger" (click)="removeCover()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        Remove
+      </button>
+    </div>
+  </div>
+
   <!-- ── EDITOR BODY ── -->
   <div class="editor-shell">
+
+    <div class="add-cover-wrap" *ngIf="!hasCover()">
+      <button class="add-cover-btn" (click)="triggerCoverUpload()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Add cover image
+      </button>
+    </div>
+
+    <input #coverInput type="file" accept="image/*"
+      style="display:none"
+      (change)="onCoverSelected($event)">
+
     <div class="page-emoji">📝</div>
 
-    <div
-      #titleDiv
-       class="editor-title"
-      contenteditable="true"
-       (input)="onTitleChange($event)"
-        data-placeholder="Untitled"
-       spellcheck="true">
-    </div>
+  <div
+  #titleDiv
+  class="editor-title"
+  contenteditable="true"
+  (input)="onTitleChange($event)"
+  (mouseup)="onSelectionChange()"
+  (keyup)="onSelectionChange()"
+  (blur)="onSelectionChange()"
+  data-placeholder="Untitled"
+  spellcheck="true">
+</div>
 
     <div
       #editorDiv
@@ -153,6 +174,7 @@
       (blur)="onSelectionChange()"
       data-placeholder="Start writing…">
     </div>
+
   </div>
 
   <!-- ── META BAR ── -->
@@ -161,9 +183,7 @@
     <span class="meta-sep">·</span>
     <span class="meta-item">{{ note.isPinned ? '📌 Pinned' : 'Not pinned' }}</span>
   </div>
- 
 
 </div>
-
 
 <div class="editor-loading" *ngIf="!note"><p>Loading…</p></div>
